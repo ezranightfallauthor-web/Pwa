@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserPlan {
+  id        String   @id
+  planId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UsageUser {
+  id               String   @id
+  secondsProcessed Float    @default(0)
+  chunks           Int      @default(0)
+  pollCount        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model UsageVenue {
+  id               String   @id
+  secondsProcessed Float    @default(0)
+  chunks           Int      @default(0)
+  pollCount        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model UserAuth {
+  id        String   @id
+  email     String   @unique
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions  Session[]
+}
+
+model Session {
+  id          String   @id
+  userId      String
+  deviceName  String
+  issuedAt    DateTime @default(now())
+  revokedAt   DateTime?
+  lastSeenAt  DateTime @default(now())
+  user        UserAuth @relation(fields: [userId], references: [id])
+
+  @@index([userId, revokedAt])
+}
+
+model VenuePlan {
+  id        String   @id
+  planId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VenueSession {
+  id          String   @id
+  venueId     String
+  startedAt   DateTime
+  lastChunkAt DateTime
+  stoppedAt   DateTime?
+  chunkCount  Int      @default(0)
+  reason      String?
+
+  @@index([venueId, stoppedAt])
+}
+
+model VenueAccess {
+  id          String   @id
+  venueId     String
+  userId      String
+  status      String   @default("pending")
+  requestedAt DateTime @default(now())
+  reviewedAt  DateTime?
+  reviewedBy  String?
+
+  @@unique([venueId, userId])
+  @@index([venueId, status])
+}
+
+model VenueMembership {
+  id        String   @id
+  venueId   String
+  userId    String
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+
+  @@unique([venueId, userId])
+  @@index([userId])
+}
+
+model UserLanguagePack {
+  userId          String   @id
+  primaryLanguage String
+  packName        String
+  packVersion     String
+  updatedAt       DateTime @updatedAt
+}
+
+model PwaInstall {
+  id              String   @id
+  deviceInstallId String   @unique
+  uiLanguage      String
+  primaryLanguage String?
+  country         String
+  userAgent       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([country])
+  @@index([uiLanguage])
+}
+
+model BillingLedgerEvent {
+  id             String   @id
+  accountType    String
+  accountId      String
+  source         String
+  sourceId       String
+  seconds        Float
+  amountUsd      Float
+  idempotencyKey String   @unique
+  metadata       String?
+  createdAt      DateTime @default(now())
+
+  @@index([accountType, accountId, createdAt])
+}
+
+model BillingPeriod {
+  id               String   @id
+  accountType      String
+  accountId        String
+  periodStart      DateTime
+  periodEnd        DateTime
+  status           String   @default("open")
+  secondsProcessed Float    @default(0)
+  projectedOverage Float    @default(0)
+  reconciledAt     DateTime?
+
+  @@unique([accountType, accountId, periodStart, periodEnd])
+  @@index([status, periodEnd])
+}
+
+model WhmcsSyncRecord {
+  id          String   @id
+  periodId    String
+  direction   String
+  status      String
+  payload     String?
+  externalRef String?
+  createdAt   DateTime @default(now())
+
+  @@index([periodId, status])
+}
