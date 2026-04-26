@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>VenueChat PWA</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="screen-splash" class="screen is-active center-screen" aria-label="Splash screen">
+        <div class="logo-dot"></div>
+        <h1>VenueChat</h1>
+        <p>Realtime venue conversations with live translation.</p>
+      </section>
+
+      <section id="screen-auth" class="screen" aria-label="Register and login">
+        <h2>Register / Login</h2>
+        <form id="auth-form" class="stack">
+          <label for="auth-email">Email</label>
+          <input id="auth-email" type="email" required placeholder="you@example.com" />
+          <label for="auth-password">Password</label>
+          <input id="auth-password" type="password" required minlength="6" placeholder="••••••" />
+          <div class="button-row">
+            <button type="submit" data-mode="login">Login</button>
+            <button type="submit" data-mode="register" class="ghost">Register</button>
+          </div>
+        </form>
+        <p id="auth-status" class="hint"></p>
+      </section>
+
+      <section id="screen-language-select" class="screen" aria-label="Select known languages">
+        <h2>Select Languages You Know</h2>
+        <p class="hint">Choose every language you can speak, read, or understand.</p>
+        <form id="language-select-form" class="stack"></form>
+      </section>
+
+      <section id="screen-language-fluency" class="screen" aria-label="Arrange language fluency">
+        <h2>Rank Your Fluency</h2>
+        <p class="hint">Set fluency so realtime translation/transcription can prioritize output.</p>
+        <p id="ui-language-onboarding-note" class="hint"></p>
+        <form id="language-fluency-form" class="stack"></form>
+      </section>
+
+      <section id="screen-venues" class="screen" aria-label="Recent venues">
+        <header class="row-between">
+          <h2>Recent Venues</h2>
+          <button type="button" id="open-settings" class="ghost">Settings</button>
+        </header>
+        <div class="d-flex gap-2 mb-2">
+          <button id="scan-qr" type="button" class="btn btn-sm btn-primary">Scan QR to Join Room</button>
+          <span id="wake-status" class="badge text-bg-secondary">Wake lock: off</span>
+        </div>
+        <p id="venue-access-status" class="hint"></p>
+        <ul id="venues-list" class="card-list"></ul>
+      </section>
+
+      <section id="screen-room" class="screen" aria-label="Room">
+        <header class="row-between">
+          <button type="button" class="ghost" data-nav="venues">← Venues</button>
+          <h2 id="room-title">Speaker Room</h2>
+          <button type="button" class="ghost" data-nav="conversation">Conversation</button>
+        </header>
+        <p id="room-description" class="hint"></p>
+
+        <article class="live-room-shell">
+          <div class="live-room-top row-between">
+            <div>
+              <p class="hint">Speaker Console</p>
+              <strong id="room-live-status">Connecting…</strong>
+            </div>
+            <div class="d-flex gap-2">
+              <button id="end-session" type="button" class="btn btn-sm btn-warning">End Session</button>
+              <button id="export-captions" type="button" class="btn btn-sm btn-success d-none">Download Session</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="hint">Languages from your settings</p>
+            <div id="room-language-chips" class="chip-wrap"></div>
+          </div>
+
+          <div id="speaker-controls" class="stream-controls"></div>
+
+          <section class="caption-board">
+            <h3>Live Captions</h3>
+            <ul id="room-captions" class="card-list messages"></ul>
+          </section>
+        </article>
+      </section>
+
+      <section id="screen-conversation" class="screen" aria-label="Conversation">
+        <header class="row-between">
+          <button type="button" class="ghost" data-nav="room">← Room</button>
+          <h2>Conversation</h2>
+          <span></span>
+        </header>
+
+        <div id="conversation-controls" class="stream-controls"></div>
+
+        <ul id="message-list" class="card-list messages"></ul>
+      </section>
+
+
+      <section id="screen-tv" class="screen" aria-label="TV transcript">
+        <header class="row-between">
+          <h2>Venue Live Transcript (TV)</h2>
+          <span id="tv-venue-label" class="badge text-bg-primary"></span>
+        </header>
+        <p class="hint">Install this PWA on a TV and keep this screen open for realtime venue transcript feed.</p>
+        <ul id="tv-transcript" class="card-list messages tv-transcript"></ul>
+      </section>
+
+      <section id="screen-settings" class="screen" aria-label="Settings">
+        <header class="row-between">
+          <button type="button" class="ghost" data-nav="venues">← Back</button>
+          <h2>Settings</h2>
+          <span></span>
+        </header>
+        <div class="stack">
+          <label class="switch-row"><span>Enable notifications</span><input id="setting-notifications" type="checkbox" /></label>
+          <label class="switch-row"><span>Dark mode</span><input id="setting-darkmode" type="checkbox" /></label>
+          <label class="switch-row"><span>Match app language to primary language</span><input id="setting-match-ui-language" type="checkbox" /></label>
+          <p id="ui-language-status" class="hint"></p>
+        </div>
+        <section>
+          <h3>Language Pack</h3>
+          <div id="language-pack-card" class="card-item"></div>
+        </section>
+        <section>
+          <h3>PWA Reach</h3>
+          <div id="install-analytics-card" class="card-item"></div>
+        </section>
+        <section>
+          <h3>Logged-in Devices</h3>
+          <ul id="sessions-list" class="card-list"></ul>
+        </section>
+        <section>
+          <h3>Venue Panel</h3>
+          <p class="hint">Join multiple venues and control where your account has membership.</p>
+          <ul id="venue-panel-list" class="card-list"></ul>
+        </section>
+        <button id="open-admin-panel" type="button" class="ghost" data-nav="admin">Open System Admin Panel</button>
+      </section>
+
+      <section id="screen-admin" class="screen" aria-label="System Admin Panel">
+        <header class="row-between">
+          <button type="button" class="ghost" data-nav="settings">← Settings</button>
+          <h2>System Admin Panel</h2>
+          <span></span>
+        </header>
+        <p class="hint">Operational view across installs, languages, countries, and scale recommendations.</p>
+        <ul id="admin-overview-cards" class="card-list"></ul>
+        <section>
+          <h3>Pending Venue Access (active venue)</h3>
+          <ul id="pending-access-list" class="card-list"></ul>
+        </section>
+        <section>
+          <h3>Billing Reconciliation (active venue)</h3>
+          <ul id="billing-period-list" class="card-list"></ul>
+        </section>
+      </section>
+
+      <nav id="main-nav" class="bottom-nav hidden" aria-label="Main navigation">
+        <button type="button" data-nav="venues">Venues</button>
+        <button type="button" data-nav="room">Speaker</button>
+        <button type="button" data-nav="conversation">Conversation</button>
+        <button type="button" data-nav="settings">Settings</button>
+        <button id="nav-admin" type="button" data-nav="admin">Admin</button>
+      </nav>
+    </main>
+
+
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header"><h5 class="modal-title">Scan Room QR</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body">
+            <video id="qr-video" class="w-100 rounded" autoplay muted playsinline></video>
+            <p class="small text-muted mt-2">QR payload format: <code>venue:&lt;venueId&gt;</code></p>
+            <input id="qr-fallback" class="form-control" placeholder="or paste QR payload" />
+          </div>
+          <div class="modal-footer"><button id="apply-qr-fallback" type="button" class="btn btn-primary">Join</button></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
